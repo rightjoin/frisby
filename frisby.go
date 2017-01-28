@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"os"
 
+	"testing"
+
 	"github.com/mozillazg/request"
 )
 
@@ -19,12 +21,13 @@ type Frisby struct {
 	Req  *request.Request
 	Resp *request.Response
 	Errs []error
+	t    *testing.T
 }
 
 // Creates a new Frisby object with the given name.
 //
 // The given name will be used if you call PrintReport()
-func Create(name string) *Frisby {
+func Create(name string, t *testing.T) *Frisby {
 	F := new(Frisby)
 	F.Name = name
 	F.Req = request.NewRequest(new(http.Client))
@@ -39,6 +42,9 @@ func Create(name string) *Frisby {
 	F.SetParams(Global.Req.Params)
 	F.Req.Json = Global.Req.Json
 	F.Req.Files = append(F.Req.Files, Global.Req.Files...)
+
+	// set T
+	F.t = t
 
 	return F
 }
@@ -241,6 +247,9 @@ func (F *Frisby) AddError(err_str string) *Frisby {
 	err := errors.New(err_str)
 	F.Errs = append(F.Errs, err)
 	Global.AddError(F.Name, err_str)
+	if F.t != nil {
+		F.t.Error(err)
+	}
 	return F
 }
 
