@@ -8,6 +8,10 @@ import (
 
 	"testing"
 
+	"runtime/debug"
+
+	"strings"
+
 	"github.com/mozillazg/request"
 )
 
@@ -248,7 +252,21 @@ func (F *Frisby) AddError(err_str string) *Frisby {
 	F.Errs = append(F.Errs, err)
 	Global.AddError(F.Name, err_str)
 	if F.t != nil {
-		F.t.Error(err)
+		stak := string(debug.Stack())
+		lines := strings.Split(stak, "\n")
+		code := ""
+		for i := range lines {
+			line := lines[i]
+			if strings.Contains(line, "frisby/expect.go") {
+				code = strings.TrimSpace(lines[i+2])
+			}
+		}
+		parts := strings.Split(code, `/`)
+		code = parts[len(parts)-2] + `/` + parts[len(parts)-1]
+		code = code[0 : strings.LastIndex(code, "+")-1]
+
+		e := fmt.Sprintf("code:%s %s", code, err_str)
+		F.t.Error(e)
 	}
 	return F
 }
