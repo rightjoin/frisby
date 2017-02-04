@@ -48,6 +48,7 @@ func Create(name string, t *testing.T) *Frisby {
 	F.Req.Files = append(F.Req.Files, Global.Req.Files...)
 
 	// set T
+	fmt.Println(name)
 	F.t = t
 
 	return F
